@@ -1,0 +1,167 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.container {
+  max-width: 900px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.entry {
+  margin-bottom: 15px;
+}
+
+.entry label {
+  display: block;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+.entry input,
+.entry select {
+  width: calc(100% - 30px);
+  padding: 15px;
+  font-size: 18px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.entry-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.delete-entry {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  padding: 5px 10px;
+  text-align: center;
+  margin-top: 10px;
+  align-self: flex-end;
+}
+
+.delete-entry:hover {
+  background-color: #c82333;
+}
+
+.button,
+.SUBbutton,
+.VERbutton {
+  padding: 15px 25px;
+  font-size: 20px;
+  margin: 10px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  text-decoration: none;
+  color: #fff;
+}
+
+.button {
+  background-color: #007bff;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+.SUBbutton {
+  background-color: #50c878;
+}
+
+.SUBbutton:hover {
+  background-color: #3f704d;
+}
+
+.VERbutton {
+  background-color: #9146FF;
+}
+
+.VERbutton:hover {
+  background-color: #7851A9;
+}
+
+.error {
+  border: 2px solid red;
+  background-color: #ffe6e6;
+}
+
+#error-message {
+  color: red;
+  margin-top: 10px;
+  display: none;
+}
+
+#verificationTable {
+  width: 100%;
+  border-collapse: collapse;
+  box-sizing: border-box;
+}
+
+#verificationTable,
+#verificationTable th,
+#verificationTable td {
+  border: 1px solid #ccc;
+}
+
+#verificationTable th,
+#verificationTable td {
+  padding: 10px;
+  text-align: left;
+}
+
+#verificationSection {
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin-top: 20px;
+  text-align: left;
+}
+
+#verificationSection p {
+  text-indent: 20px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  text-align: left;
+  font-size: 14px;
+}
+
+#signature {
+  width: calc(100% - 30px);
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 18px;
+}
+
+#qr-reader {
+  width: 500px;
+  margin: 20px auto;
+  border-radius: 10px;
+  box-shadow: 4px 4px 10px #d1d9e6, -4px -4px 10px #ffffff;
+}
+
+#qr-reader-results {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 16px;
+  color: #333;
+}
