@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <base target="_top">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/1337van/ScrapWA/SCRAPWA.css">
+ <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+ <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <button onclick="openInNewTab('https://docs.google.com/forms/d/e/1FAIpQLSeWD2T_FsO62OybuGkYsEcOG6YVIDNJ7Cp9nWajj8C0BTZ7wA/viewform');" class="button">Production Reporting Form</button>
+    <button onclick="showForm()" class="button">Scrap Reporting Form</button>
+    <button onclick="openInNewTab('https://docs.google.com/document/d/12rHDM5uDE54Bj5PC6GHptJEjaSRTnTKK/edit?usp=sharing&ouid=114559526297277110600&rtpof=true&sd=true');" class="button">Reporting Work Instruction</button>
+
+    <div id="dataForm" style="display:none;">
+      <form id="scrapForm">
+        <div class="entry">
+          <label for="dataEnteredBy">Data Entered By:</label>
+          <select id="dataEnteredBy" name="dataEnteredBy"></select>
+        </div>
+        <div class="entry">
+          <label for="job">Job:</label>
+          <select id="job" name="job">
+            <option value="">Select Job</option>
+            <option value="DTN Assembly">DTN Assembly</option>
+            <option value="DTN Quality">DTN Quality</option>
+            <option value="DTN Glue">DTN Glue</option>
+            <option value="DTN AQL">DTN AQL</option>
+          </select>
+        </div>
+
+        <div class="entry">
+         <label for="prdNumber">Scan or Enter PRD #: Activate QR Code / Camera. Click on field and scan barcode to populate the field.</label>
+         <div id="qr-reader" style="width: 100%; max-width: 500px; margin: auto;"></div>
+                 <div id="qr-reader-results" style="margin-bottom: 20px;"></div>
+         <input type="text" id="prdNumber" name="prdNumber" pattern="PRD-\\d{6}" required class="form-control" style="margin-top: 10px;">
+        </div>
+<div id="warning-message"></div>
+        <table id="entryTable" style="width:100%; margin-top: 20px;">
+          <thead>
+            <tr>
+              <th>Item #</th>
+              <th>Batch #</th>
+              <th>NC Code</th>
+              <th>Quantity</th>
+              <th>Goodwill/Vendor</th>
+            </tr>
+          </thead>
+          <tbody id="entryContainer">
+            <!-- Entry rows will be added here by JavaScript -->
+          </tbody>
+        </table>
+        <button type="button" onclick="addEntry()" class="button">Add Entry</button>
+        <button type="button" onclick="verifyData()" class="VERbutton">Verify Data</button>
+        <button type="button" button onclick="goBack()" class="button">Back to Dashboard</button>
+
+        <div id="verificationSection" style="display:none;">
+        <h3>Verification</h3>
+        <table id="verificationTable">
+            <!-- Table rows will be added here by JavaScript -->
+        </table>
+        <p>After verifying the above information is correct, please put your 3-letter initial to digitally sign. Accuracy is important, and we appreciate your efforts in reviewing and verifying your entries before submission.</p>
+        <div>
+            <label for="signature">Signature:</label>
+            <input type="text" id="signature" name="signature" required oninput="enableSubmitButton()">
+        </div>
+        <button type="SUBbutton" onclick="finalSubmit()" class="SUBbutton" id="finalSubmitButton" disabled>Submit Data</button>
+    </div>
+
+      </form>
+    </div>
+  </div>
+
+<script>
+function showForm() {
+    document.getElementById('dataForm').style.display = 'block';
+    document.getElementById('entryContainer').innerHTML = '';
+    addEntry();
+}
+
+function populateDropdown(dropdown, options, placeholder) {
+    dropdown.innerHTML = '';
+    if (placeholder) {
+        dropdown.appendChild(new Option(placeholder, '', true, true));
+    }
+    options.forEach(option => dropdown.appendChild(new Option(option)));
+}
+
+function addEntry() {
+    const container = document.getElementById('entryContainer');
+    const entryRow = document.createElement('tr');
+    entryRow.innerHTML = `
+        <td><select name="componentItem"></select></td>
+        <td><input type="text" name="batchNumber" readonly></td>
+        <td><select name="ncCode"></select></td>
+        <td><input type="number" name="quantity" min="1" required></td>
+        <td><select name="goodwillVendor"></select></td>
+        <td><button type="button" class="delete-entry" onclick="deleteEntry(this)">Delete</button></td>
+    `;
+    container.appendChild(entryRow);
+    fetchDropdownData(entryRow);
+
+    // Initialize 'Item #' dropdown for the new row
+    let prdNumber = document.getElementById('prdNumber').value;
+    if(prdNumber) {
+        updateItemDropdown(entryRow, prdNumber);
+    }
+
+    // Add event listener to the 'Item #' dropdown
+    let itemDropdown = entryRow.querySelector('select[name="componentItem"]');
+    itemDropdown.addEventListener('change', function() {
+        updateBatchNumbers(this.value, entryRow);
+    });
+}
+
+// Function to update 'Item #' dropdown based on 'PRD #' - Call this when adding a new entry or changing 'PRD #'
+function updateItemDropdown(entryRow, prdNumber) {
+    google.script.run.withSuccessHandler(function(data) {
+        populateDropdown(entryRow.querySelector('select[name="componentItem"]'), data.items, "Select Item #");
+    }).getDataForPRD(prdNumber);
+}
+
+///Automatically add Batch # based on Item # and PRD #. Text. 
+function updateBatchNumbers(item, entryRow) {
+    let prdNumber = document.getElementById('prdNumber').value; // Get the current PRD #
+
+    google.script.run.withSuccessHandler(function(batches) {
+        // Concatenate all batch numbers, separated by commas
+        let batchInput = entryRow.querySelector('input[name="batchNumber"]');
+        batchInput.value = batches.join(', ');
+    }).getBatchesForItem(item, prdNumber);
+}
+
+function fetchDropdownData(entryRow) {
+    google.script.run.withSuccessHandler(options => {
+        populateDropdown(entryRow.querySelector('select[name="ncCode"]'), options, "Select NC Code");
+    }).getDropdownOptions('N2:N40');
+
+    populateDropdown(entryRow.querySelector('select[name="goodwillVendor"]'), ["Goodwill", "Vendor"], "Select GW / V");
+}
+
+function deleteEntry(deleteButton) {
+    deleteButton.closest('tr').remove();
+}
+
+function verifyData() {
+    let isValid = true;
+    const prdInput = document.getElementById('prdNumber');
+    const prdPattern = /^PRD-\d{6}$/;
+
+    clearWarnings();
+    isValid &= validateField(prdInput, prdPattern, 'PRD number format is incorrect.');
+
+    if (isValid) {
+        populateVerificationTable();
+        document.getElementById('verificationSection').style.display = 'block';
+    }
+}
+
+function validateField(input, pattern, errorMessage) {
+    if (!pattern.test(input.value)) {
+        input.classList.add('error');
+        displayWarning(errorMessage);
+        return false;
+    }
+    input.classList.remove('error');
+    return true;
+}
+
+function displayWarning(message) {
+    const warningDiv = document.getElementById('warning-message');
+    warningDiv.innerText += message + '\n';
+    warningDiv.style.display = 'block';
+}
+
+function clearWarnings() {
+    const warningDiv = document.getElementById('warning-message');
+    if (warningDiv) { // Check if the element is not null
+        warningDiv.innerText = '';
+        warningDiv.style.display = 'none';
+    } else {
+        console.error('Warning message element not found');
+    }
+}
+
+function populateVerificationTable() {
+    const formData = gatherFormData();
+    const verificationTable = document.getElementById('verificationTable');
+    verificationTable.innerHTML = '';
+
+    createTableHeaders(verificationTable, ['Name', 'Job', 'PRD#', 'Item #', 'Batch #', 'NC Code', 'Qty', 'GW/V']);
+    formData.entries.forEach(entry => addTableRow(verificationTable, formData, entry));
+}
+
+function gatherFormData() {
+    return {
+        dataEnteredBy: document.getElementById('dataEnteredBy').value,
+        job: document.getElementById('job').value,
+        prdNumber: document.getElementById('prdNumber').value,
+        entries: Array.from(document.querySelectorAll('#entryContainer tr')).map(row => ({
+            componentItem: row.querySelector('[name="componentItem"]').value,
+            batchNumber: row.querySelector('[name="batchNumber"]').value,
+            ncCode: row.querySelector('[name="ncCode"]').value,
+            quantity: row.querySelector('[name="quantity"]').value,
+            goodwillVendor: row.querySelector('[name="goodwillVendor"]').value
+        }))
+    };
+}
+
+function createTableHeaders(table, headers) {
+    const thead = table.createTHead();
+    const headerRow = thead.insertRow();
+    headers.forEach(header => headerRow.appendChild(document.createElement('th')).textContent = header);
+}
+
+function addTableRow(table, formData, entry) {
+    const row = table.insertRow();
+    ['dataEnteredBy', 'job', 'prdNumber', 'componentItem', 'batchNumber', 'ncCode', 'quantity', 'goodwillVendor']
+        .forEach(key => row.insertCell().textContent = formData[key] || entry[key]);
+}
+
+function enableSubmitButton() {
+    document.getElementById('finalSubmitButton').disabled = !document.getElementById('signature').value.trim();
+}
+
+function finalSubmit() {
+    if (submitForm()) {
+        document.getElementById('verificationSection').style.display = 'none';
+        resetForm();
+    }
+}
+
+function submitForm() {
+    const formData = gatherFormData();
+    formData.signature = document.getElementById('signature').value;
+    if (!formData.signature) {
+        displayWarning('Signature is required.');
+        return false;
+    }
+    google.script.run.withSuccessHandler(() => {
+        alert('Data submitted successfully.');
+    }).withFailureHandler(err => {
+        alert('Failed to submit data. Error: ' + err.message);
+    }).processFormData(formData);
+    return true;
+}
+
+function resetForm() {
+    document.getElementById('scrapForm').reset();
+    document.getElementById('entryContainer').innerHTML = '';
+    addEntry();
+}
+
+function goBack() {
+    document.getElementById('dataForm').style.display = 'none';
+}
+
+// QR Code Scanner Functions w ScanSuccess decisions
+var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 400 });
+html5QrcodeScanner.render(onScanSuccess);
+
+function onScanSuccess(decodedText, decodedResult) {
+    // Check if the currently focused element is the PRD# input
+    let focusedInput = document.activeElement;
+    if (focusedInput && focusedInput.id === 'prdNumber') {
+        // Set the value of the PRD# field to the decoded text
+        focusedInput.value = decodedText;
+        updateItemAndBatchFields(decodedText); // Update related fields based on the PRD#
+    } else {
+        // If the focused element is not the PRD# input, display the scanned code
+        document.getElementById('qr-reader-results').innerText = `Scanned Code: ${decodedText}`;
+    }
+}
+
+window.onload = function() {
+    google.script.run.withSuccessHandler(options => {
+        populateDropdown(document.getElementById('dataEnteredBy'), options, "Select Data Entered By");
+    }).getDropdownOptions('J2:J40');
+    addEntry();
+};
+    document.getElementById('prdNumber').addEventListener('change', function() {
+        updateItemAndBatchFields(this.value);
+    });
+
+function updateItemAndBatchFields(prdNumber) {
+    google.script.run.withSuccessHandler(function(data) {
+        populateDropdown(document.querySelector('select[name="componentItem"]'), data.items, "Select Item #");
+        // Optionally, handle the batch numbers here or in another function
+    }).getDataForPRD(prdNumber);
+}
+document.getElementById('prdNumber').addEventListener('change', function() {
+    updateItemAndBatchFields(this.value); // Update fields when PRD# is manually changed
+});
+
+</script>
+
+</body>
+</html>
