@@ -120,13 +120,6 @@
     max-width: 500px; /* Maximum width */
     height: 300px; /* Set a fixed height for the scanner area */
     margin: 20px auto; /* Center align and add some margin */
-    position: relative; /* Relative positioning for inner elements */
-    border: 1px solid #ccc; /* Border for the scanner area */
-    border-radius: 8px; /* Optional: Rounded corners */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Box shadow for a subtle depth effect */
-    }
-
-/* Optionally, add styles for when the scanner is active/has focus */
-    #barcode-scanner:focus-within {
-    box-shadow: 0 0 10px rgba(0, 0, 255, 0.5); /* Example: Change box shadow color when focused */
-    }
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 4px 4px 10px #d1d9e6, -4px -4px 10px #ffffff; /* Box shadow for a subtle depth effect */
+   }
