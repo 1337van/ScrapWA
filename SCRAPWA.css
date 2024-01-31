@@ -57,7 +57,8 @@
     background-color: #ffe6e6; /* Optional: Sets a light red background color for the input field */
     }
 
-.button, .SUBbutton, .VERbutton {
+/* General button styles */
+.button, .SUBbutton, .VERbutton, .start-button, .stop-button {
     padding: 15px 25px;
     font-size: 20px;
     margin: 10px;
@@ -69,29 +70,22 @@
     color: #fff; /* White text */
 }
 
-.button { background-color: #007bff; }
+/* Specific styles for different button types */
+.button { background-color: #007bff; } /* Default button */
 .button:hover { background-color: #0056b3; }
 
-.SUBbutton { background-color: #50c878; }
+.SUBbutton { background-color: #50c878; } /* Submit button */
 .SUBbutton:hover { background-color: #3f704d; }
 
-.VERbutton { background-color: #9146FF; }
+.VERbutton { background-color: #9146FF; } /* Verify button */
 .VERbutton:hover { background-color: #7851A9; }
 
-/* Start and Stop button styles */
-.button.start-button {
-    background-color: #28a745; /* Green */
-}
-.button.start-button:hover {
-    background-color: #218838; /* Darker Green */
-}
+.start-button { background-color: #28a745; } /* Start button */
+.start-button:hover { background-color: #218838; }
 
-.button.stop-button {
-    background-color: #dc3545; /* Red */
-}
-.button.stop-button:hover {
-    background-color: #c82333; /* Darker Red */
-}
+.stop-button { background-color: #dc3545; } /* Stop button */
+.stop-button:hover { background-color: #c82333; }
+
 ror message display */
    #error-message {
     color: red; /* Text color for the error message */
