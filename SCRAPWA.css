@@ -57,8 +57,8 @@
     background-color: #ffe6e6; /* Optional: Sets a light red background color for the input field */
     }
 
-/* General button styles */
-.button, .SUBbutton, .VERbutton, .start-button, .stop-button {
+    /* General button styles */
+    .button, .SUBbutton, .VERbutton, .startbutton, .stopbutton {
     padding: 15px 25px;
     font-size: 20px;
     margin: 10px;
@@ -68,23 +68,23 @@
     transition: background-color 0.3s;
     text-decoration: none;
     color: #fff; /* White text */
-}
+   }
 
-/* Specific styles for different button types */
-.start-button { background-color: #28a745; } /* Start button */
-.start-button:hover { background-color: #218838; }
+   /* Specific styles for different button types */
+   .startbutton { background-color: #28a745; } /* Start button */
+   .startbutton:hover { background-color: #218838; }
 
-.stop-button { background-color: #dc3545; } /* Stop button */
-.stop-button:hover { background-color: #c82333; }
+   .stopbutton { background-color: #dc3545; } /* Stop button */
+   .stopbutton:hover { background-color: #c82333; }
 
-.button { background-color: #007bff; } /* Default button */
-.button:hover { background-color: #0056b3; }
+   .button { background-color: #007bff; } /* Default button */
+   .button:hover { background-color: #0056b3; }
 
-.SUBbutton { background-color: #50c878; } /* Submit button */
-.SUBbutton:hover { background-color: #3f704d; }
+   .SUBbutton { background-color: #50c878; } /* Submit button */
+   .SUBbutton:hover { background-color: #3f704d; }
 
-.VERbutton { background-color: #9146FF; } /* Verify button */
-.VERbutton:hover { background-color: #7851A9; }
+   .VERbutton { background-color: #9146FF; } /* Verify button */
+   .VERbutton:hover { background-color: #7851A9; }
 
 ror message display */
    #error-message {
