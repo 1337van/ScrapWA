@@ -71,11 +71,8 @@
    }
 
    /* Specific styles for different button types */
-   .startbutton { background-color: #28a745; } /* Start button */
-   .startbutton:hover { background-color: #218838; }
-
-   .stopbutton { background-color: #dc3545; } /* Stop button */
-   .stopbutton:hover { background-color: #c82333; }
+   .startbutton { background-color: #28a745 !important; } /* Green */
+   .stopbutton { background-color: #dc3545 !important; } /* Red */
 
    .button { background-color: #007bff; } /* Default button */
    .button:hover { background-color: #0056b3; }
