@@ -71,6 +71,12 @@
 }
 
 /* Specific styles for different button types */
+.start-button { background-color: #28a745; } /* Start button */
+.start-button:hover { background-color: #218838; }
+
+.stop-button { background-color: #dc3545; } /* Stop button */
+.stop-button:hover { background-color: #c82333; }
+
 .button { background-color: #007bff; } /* Default button */
 .button:hover { background-color: #0056b3; }
 
@@ -79,12 +85,6 @@
 
 .VERbutton { background-color: #9146FF; } /* Verify button */
 .VERbutton:hover { background-color: #7851A9; }
-
-.start-button { background-color: #28a745; } /* Start button */
-.start-button:hover { background-color: #218838; }
-
-.stop-button { background-color: #dc3545; } /* Stop button */
-.stop-button:hover { background-color: #c82333; }
 
 ror message display */
    #error-message {
