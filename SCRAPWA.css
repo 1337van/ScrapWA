@@ -68,21 +68,19 @@
 .VERbutton { background-color: #9146FF; }
 .VERbutton:hover { background-color: #7851A9; }
 
-.start-button {
+.button.start-button {
     background-color: #28a745; /* Green */
-    color: white;
 }
 
-.start-button:hover {
+.button.start-button:hover {
     background-color: #218838; /* Darker Green */
 }
 
-.stop-button {
+.button.stop-button {
     background-color: #dc3545; /* Red */
-    color: white;
 }
 
-.stop-button:hover {
+.button.stop-button:hover {
     background-color: #c82333; /* Darker Red */
 }
 
