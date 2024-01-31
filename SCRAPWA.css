@@ -58,7 +58,7 @@
     }
 
     /* General button styles */
-    .button, .SUBbutton, .VERbutton, .startbutton, .stopbutton {
+    .button, .SUBbutton, .VERbutton {
     padding: 15px 25px;
     font-size: 20px;
     margin: 10px;
