@@ -50,28 +50,38 @@
     .delete-entry:hover {
       background-color: #c82333;
     }
-   .button, .SUBbutton, .VERbutton {
-  padding: 15px 25px;
-  font-size: 20px;
-  margin: 10px;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  text-decoration: none;
-  color: #fff; /* Assuming all buttons have white text */
+   
+
+    .error {
+    border: 2px solid red; /* Highlights the border of the input field in red */
+    background-color: #ffe6e6; /* Optional: Sets a light red background color for the input field */
+    }
+
+.button, .SUBbutton, .VERbutton {
+    padding: 15px 25px;
+    font-size: 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-decoration: none;
+    color: #fff; /* White text */
 }
+
 .button { background-color: #007bff; }
 .button:hover { background-color: #0056b3; }
+
 .SUBbutton { background-color: #50c878; }
 .SUBbutton:hover { background-color: #3f704d; }
+
 .VERbutton { background-color: #9146FF; }
 .VERbutton:hover { background-color: #7851A9; }
 
+/* Start and Stop button styles */
 .button.start-button {
     background-color: #28a745; /* Green */
 }
-
 .button.start-button:hover {
     background-color: #218838; /* Darker Green */
 }
@@ -79,17 +89,10 @@
 .button.stop-button {
     background-color: #dc3545; /* Red */
 }
-
 .button.stop-button:hover {
     background-color: #c82333; /* Darker Red */
 }
-
-    .error {
-    border: 2px solid red; /* Highlights the border of the input field in red */
-    background-color: #ffe6e6; /* Optional: Sets a light red background color for the input field */
-    }
-
-    /* Optionally, you can add styles for the error message display */
+ror message display */
    #error-message {
     color: red; /* Text color for the error message */
     margin-top: 10px; /* Spacing above the error message */
