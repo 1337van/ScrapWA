@@ -1,0 +1,442 @@
+// This is the main server-side script file for your Google Apps Script web app.
+
+// doGet is the default function that runs when your web app is loaded.
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('CMA_Scrap_Form_WA')
+    .setTitle('YOST App')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function getDropdownOptions(rangeA1Notation) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('DATA TABLES'); // Ensure the sheet name matches exactly
+  var range = sheet.getRange(rangeA1Notation);
+  var values = range.getValues();
+  var options = values.flat().filter(function(option) { return option !== ''; });
+  return options;
+}
+
+
+function processFormData(formData) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Scrap_Data');
+  
+  formData.entries.forEach(function(entry) {
+    sheet.appendRow([
+      new Date(), // Time stamp
+      formData.dataEnteredBy, // Data Entered By
+      formData.job, // Job
+      formData.prdNumber, // PRD Number
+      entry.componentItem, // Component Item Number
+      entry.batchNumber, // Batch Number
+      entry.ncCode, // NC Code
+      entry.quantity, // Quantity
+      entry.goodwillVendor, // Goodwill or Vendor
+      formData.signature // Include the signature
+    ]);
+  });
+
+  return true;
+}
+
+
+
+////////////////////////////
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .container {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+    box-sizing: border-box; /* Make sure padding and borders are included in the width */
+    }
+    .entry {
+      margin-bottom: 15px;
+    }
+    .entry label {
+      display: block;
+      margin-bottom: 5px;
+      text-align: left; /* Align labels to the left */
+    }
+    .entry input, .entry select {
+      width: calc(100% - 20px);
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .entry-row {
+      display: flex;
+      flex-direction: column; /* Stack items vertically */
+    }
+    .delete-entry {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      padding: 5px 10px;
+      text-align: center;
+      margin-top: 10px;
+      align-self: flex-end; /* Align delete button to the right */
+    }
+    .delete-entry:hover {
+      background-color: #c82333;
+    }
+    .button {
+      display: inline-block;
+      background-color: #007bff;
+      color: #fff;
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      text-decoration: none;
+    }
+    .button:hover {
+      background-color: #0056b3;
+    }
+    .SUBbutton {
+      display: inline-block;
+      background-color: #50c878;
+      color: #fff;
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      text-decoration: none;
+    }
+    .SUBbutton:hover {
+      background-color: #3f704d;
+    }
+    .VERbutton {
+      display: inline-block;
+      background-color: #9146FF;
+      color: #fff;
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      text-decoration: none;
+    }
+    .VERbutton:hover {
+      background-color: #7851A9;
+    }
+#verificationTable {
+    width: 100%;
+    border-collapse: collapse;
+    box-sizing: border-box; /* Include padding and border in the element's width */
+}
+
+#verificationTable, #verificationTable th, #verificationTable td {
+    border: 1px solid #ccc;
+}
+
+#verificationTable th, #verificationTable td {
+    padding: 10px;
+    text-align: left;
+}
+
+#verificationSection {
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: left; /* Align text inside the container to the left */
+}
+
+#verificationSection p {
+    text-indent: 20px; /* Indent the first line */
+    margin-top: 15px;
+    margin-bottom: 15px;
+    text-align: left;
+    font-size: 14px;
+}
+
+
+#signature {
+    width: calc(100% - 22px); /* Adjust width to match inputs */
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+    
+  </style>
+</head>
+<body>
+  <div class="container">
+<button onclick="openInNewTab('https://docs.google.com/forms/d/e/1FAIpQLSeWD2T_FsO62OybuGkYsEcOG6YVIDNJ7Cp9nWajj8C0BTZ7wA/viewform');" class="button">Production Reporting Form</button>
+<button onclick="showForm()" class="button">Scrap Reporting Form</button>
+<button onclick="openInNewTab('https://docs.google.com/document/d/12rHDM5uDE54Bj5PC6GHptJEjaSRTnTKK/edit?usp=sharing&ouid=114559526297277110600&rtpof=true&sd=true');" class="button">Reporting Work Instruction</button>
+    <div id="dataForm" style="display:none;">
+      <form id="scrapForm">
+        <div class="entry">
+          <label for="dataEnteredBy">Data Entered By:</label>
+          <select id="dataEnteredBy" name="dataEnteredBy"></select>
+        </div>
+        <div class="entry">
+          <label for="job">Job:</label>
+          <select id="job" name="job">
+            <option value="">Select Job</option>
+            <option value="DTN Assembly">DTN Assembly</option>
+            <option value="DTN Quality">DTN Quality</option>
+            <option value="DTN Glue">DTN Glue</option>
+            <option value="DTN AQL">DTN AQL</option>
+          </select>
+          </div>
+        <div class="entry">
+          <label for="prdNumber">PRD #:</label>
+          <input type="text" id="prdNumber" name="prdNumber" pattern="\d{6}" required>
+        </div>
+        <div id="entryContainer">
+          <!-- Entry rows will be added here by JavaScript -->
+        </div>
+        <button type="button" onclick="addEntry()" class="button">Add Entry</button>
+        <button type="button" onclick="verifyData()" class="VERbutton">Verify Data</button>
+        <button type="button" button onclick="goBack()" class="button">Back to Dashboard</button>
+      </form>
+    </div>
+        <div id="verificationSection" style="display:none;">
+        <h3>Verification</h3>
+        <table id="verificationTable">
+            <!-- Table rows will be added here by JavaScript -->
+        </table>
+        <p><B>IF ANY CELLS ARE YELLOW PLEASE CORRECT THE DATA BEFORE SUBMITTING!</b> After verifying the above information is correct, please put your 3-letter initial to digitally sign. Accuracy is important, and we appreciate your efforts in reviewing and verifying your entries before submission.</p>
+        <div>
+            <label for="signature">Signature:</label>
+            <input type="text" id="signature" name="signature" required oninput="enableSubmitButton()">
+        </div>
+        <button type="SUBbutton" onclick="finalSubmit()" class="SUBbutton" id="finalSubmitButton" disabled>Submit Data</button>
+    </div>
+  </div>
+  </div>
+
+  <script>
+    function showForm() {
+      document.getElementById('dataForm').style.display = 'block';
+      document.getElementById('entryContainer').innerHTML = '';
+      addEntry();
+    }
+
+    window.onload = function() {
+      google.script.run.withSuccessHandler(function(options) {
+        populateDropdown(document.getElementById('dataEnteredBy'), options, "Select Data Entered By");
+      }).getDropdownOptions('J2:J40');
+
+      // Add the first entry row by default
+      addEntry();
+    };
+
+    function addEntry() {
+      var container = document.getElementById('entryContainer');
+      var entryDiv = document.createElement('div');
+      entryDiv.className = 'entry-row';
+      entryDiv.innerHTML = `
+        <div class="entry">
+          <label for="componentItem">Component Item #:</label>
+          <select name="componentItem"></select>
+        </div>
+        <div class="entry">
+          <label for="batchNumber">Batch #:</label>
+          <input type="text" name="batchNumber" pattern="\\d*" required>
+        </div>
+        <div class="entry">
+          <label for="ncCode">NC Code:</label>
+          <select name="ncCode"></select>
+        </div>
+        <div class="entry">
+          <label for="quantity">Quantity:</label>
+          <input type="number" name="quantity" min="1" required>
+        </div>
+        <div class="entry">
+          <label for="goodwillVendor">Goodwill or Vendor:</label>
+          <select name="goodwillVendor"></select>
+         </div>
+         <button type="button" class="delete-entry" onclick="deleteEntry(this)">Delete</button>
+      `;
+      container.appendChild(entryDiv);
+
+      // Fetch dropdown options for new entry fields
+      google.script.run.withSuccessHandler(function(options) {
+        populateDropdown(entryDiv.querySelector('select[name="componentItem"]'), options, "Select Component Item");
+      }).getDropdownOptions('P2:P30');
+
+      google.script.run.withSuccessHandler(function(options) {
+        populateDropdown(entryDiv.querySelector('select[name="ncCode"]'), options, "Select NC Code");
+      }).getDropdownOptions('N2:N40');
+
+      // Populate Goodwill or Vendor dropdown
+      populateDropdown(entryDiv.querySelector('select[name="goodwillVendor"]'), ["Goodwill", "Vendor"], "Select Goodwill or Vendor");
+    }
+
+    function deleteEntry(deleteButton) {
+      var entryRow = deleteButton.parentNode;
+      entryRow.parentNode.removeChild(entryRow);
+    }
+
+ function populateDropdown(dropdown, options, placeholder) {
+      dropdown.innerHTML = '';
+      if (placeholder) {
+        var placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = placeholder;
+        placeholderOption.disabled = true;
+        placeholderOption.selected = true;
+        dropdown.appendChild(placeholderOption);
+      }
+      options.forEach(function(option) {
+        var opt = document.createElement('option');
+        opt.value = option;
+        opt.textContent = option;
+        dropdown.appendChild(opt);
+      });
+    }
+
+
+ function verifyData() {
+      var formData = {
+        dataEnteredBy: document.getElementById('dataEnteredBy').value,
+        job: document.getElementById('job').value,
+        prdNumber: document.getElementById('prdNumber').value,
+        entries: Array.from(document.getElementsByClassName('entry-row')).map(function(entryDiv) {
+          return {
+            componentItem: entryDiv.querySelector('[name="componentItem"]').value,
+            batchNumber: entryDiv.querySelector('[name="batchNumber"]').value,
+            ncCode: entryDiv.querySelector('[name="ncCode"]').value,
+            quantity: entryDiv.querySelector('[name="quantity"]').value,
+            goodwillVendor: entryDiv.querySelector('[name="goodwillVendor"]').value
+          };
+        })
+      };
+      
+    var verificationTable = document.getElementById('verificationTable');
+    verificationTable.innerHTML = ''; // Clear previous data
+
+    // Create table header
+    var thead = verificationTable.createTHead();
+    var headerRow = thead.insertRow();
+    var headers = ["Name", "Job", "PRD#", "Item #", "Batch #", "NC Code", "Qty", "GW/V"];
+    headers.forEach(function(header) {
+        var th = document.createElement("th");
+        th.appendChild(document.createTextNode(header));
+        headerRow.appendChild(th);
+    });
+
+    // Create table rows
+    formData.entries.forEach(function(entry) {
+        var row = verificationTable.insertRow();
+        var data = [
+            formData.dataEnteredBy, 
+            formData.job, 
+            formData.prdNumber, 
+            entry.componentItem, 
+            entry.batchNumber, 
+            entry.ncCode, 
+            entry.quantity, 
+            entry.goodwillVendor
+        ];
+        data.forEach(function(value) {
+            var cell = row.insertCell();
+            cell.appendChild(document.createTextNode(value));
+        if (value === '' || value == null) {
+                cell.style.backgroundColor = 'yellow';
+            }
+        });
+    });
+
+    document.getElementById('verificationSection').style.display = 'block';
+}
+
+    function enableSubmitButton() {
+      var signature = document.getElementById('signature').value;
+      document.getElementById('finalSubmitButton').disabled = signature.trim().length === 0;
+    }
+
+    function finalSubmit() {
+      // Call the existing submitForm function
+      submitForm();
+      // Hide the verification section and reset the form
+      document.getElementById('verificationSection').style.display = 'none';
+      resetForm();
+    }
+
+
+function submitForm() {
+  var formData = {
+    dataEnteredBy: document.getElementById('dataEnteredBy').value,
+    job: document.getElementById('job').value,
+    prdNumber: document.getElementById('prdNumber').value,
+    signature: document.getElementById('signature').value, // Include the signature
+    entries: Array.from(document.getElementsByClassName('entry-row')).map(function(entryDiv) {
+      return {
+        componentItem: entryDiv.querySelector('[name="componentItem"]').value,
+        batchNumber: entryDiv.querySelector('[name="batchNumber"]').value,
+        ncCode: entryDiv.querySelector('[name="ncCode"]').value,
+        quantity: parseInt(entryDiv.querySelector('[name="quantity"]').value, 10),
+        goodwillVendor: entryDiv.querySelector('[name="goodwillVendor"]').value,
+      };
+    })
+  };
+  google.script.run.withSuccessHandler(function() {
+    window.alert('Data submitted successfully.');
+    resetForm(); // Call resetForm to clear the form
+  }).withFailureHandler(function(err){
+    window.alert('Failed to submit data. Error: ' + err.message);
+  }).processFormData(formData);
+}
+
+function resetForm() {
+  // Reset the dropdowns and text input
+  document.getElementById('dataEnteredBy').value = '';
+  document.getElementById('job').value = '';
+  document.getElementById('prdNumber').value = '';
+  document.getElementById('signature').value = ''; // Reset signature field
+
+  // Clear and re-add the initial entry in the entry container
+  var entryContainer = document.getElementById('entryContainer');
+  while (entryContainer.firstChild) {
+    entryContainer.removeChild(entryContainer.firstChild);
+  }
+  addEntry(); // Add the initial state of the entry row
+}
+///Additional Layers 11/9/2023
+    function goBack() {
+    document.getElementById('dataForm').style.display = 'none';
+    }
+
+    function openInNewTab(url) {
+    window.open(url, '_blank').focus();
+    }
+
+    </script>
+
+
+  </body>
+</html>
