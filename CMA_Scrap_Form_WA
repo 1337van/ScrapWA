@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<base target="_top">
+<style>
+      body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .container {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .entry {
+      margin-bottom: 15px;
+    }
+    .entry label {
+      display: block;
+      margin-bottom: 5px;
+      text-align: left;
+    }
+    .entry input, .entry select {
+      width: calc(100% - 30px); /* Adjusted for increased padding */
+      padding: 15px; /* Increased padding for larger touch targets */
+      font-size: 18px; /* Larger font size for better readability */
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .entry-row {
+      display: flex;
+      flex-direction: column;
+    }
+    .delete-entry {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      padding: 5px 10px;
+      text-align: center;
+      margin-top: 10px;
+      align-self: flex-end;
+    }
+    .delete-entry:hover {
+      background-color: #c82333;
+    }
+   
+
+    .error {
+    border: 2px solid red; /* Highlights the border of the input field in red */
+    background-color: #ffe6e6; /* Optional: Sets a light red background color for the input field */
+    }
+
+     .button, .SUBbutton, .VERbutton {
+     padding: 15px 25px;
+     font-size: 20px;
+     margin: 10px;
+     border: none;
+     border-radius: 20px;
+     cursor: pointer;
+     transition: background-color 0.3s;
+     text-decoration: none;
+     color: #fff; /* Assuming all buttons have white text */
+      }
+    .button { background-color: #007bff; }
+    .button:hover { background-color: #0056b3; }
+    .SUBbutton { background-color: #50c878; }
+    .SUBbutton:hover { background-color: #3f704d; }
+    .VERbutton { background-color: #9146FF; }
+    .VERbutton:hover { background-color: #7851A9; }
+
+   #error-message {
+    color: red; /* Text color for the error message */
+    margin-top: 10px; /* Spacing above the error message */
+    display: none; /* Initially hidden, shown only when there are errors */
+    }
+
+    #verificationTable {
+      width: 100%;
+      border-collapse: collapse;
+      box-sizing: border-box;
+    }
+    #verificationTable, #verificationTable th, #verificationTable td {
+      border: 1px solid #ccc;
+    }
+    #verificationTable th, #verificationTable td {
+      padding: 10px;
+      text-align: left;
+    }
+    #verificationSection {
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      margin-top: 20px;
+      text-align: left;
+    }
+    #verificationSection p {
+      text-indent: 20px;
+      margin-top: 15px;
+      margin-bottom: 15px;
+      text-align: left;
+      font-size: 14px;
+    }
+    #signature {
+      width: calc(100% - 30px); /* Adjusted for increased padding */
+      padding: 15px; /* Increased padding */
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 18px; /* Increased font size */
+    }
+#barcode-scanner {
+    width: 100%;
+    max-width: 500px;
+    max-height: 0; /* Initially no height */
+    overflow: hidden; /* Hide the overflow content */
+    margin: 20px auto;
+    border-radius: 10px;
+    box-shadow: 4px 4px 10px #d1d9e6, -4px -4px 10px #ffffff;
+    transition: max-height 0.5s ease-out; /* Smooth transition for expanding and collapsing */
+}
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <button onclick="openProductionOrderReporting();" class="button">Production Order Reporting</button>
+    <button onclick="showForm()" class="button">Scrap Reporting Form</button>
+    <button onclick="openInNewTab('');" class="button">*WI Under Construction*</button>
+
+    <div id="dataForm" style="display:none;">
+      <form id="scrapForm">
+        <div class="entry">
+          <label for="dataEnteredBy">Data Entered By:</label>
+          <select id="dataEnteredBy" name="dataEnteredBy"></select>
+        </div>
+        <div class="entry">
+          <label for="job">Job:</label>
+          <select id="job" name="job">
+            <option value="">Select Job</option>
+            <option value="DTN Assembly">DTN Assembly</option>
+            <option value="DTN Quality">DTN Quality</option>
+            <option value="DTN Glue">DTN Glue</option>
+            <option value="DTN AQL">DTN AQL</option>
+          </select>
+        </div>
+
+<div class="entry">
+    <label for="prdNumber">
+    To record a Production Order (PRD#), you can either use the barcode scanner by clicking "Start Scanner" and scanning the barcode, which will auto-fill the PRD# field, or manually enter the PRD# if preferred. Once the PRD# is entered, the system automatically updates the "Item #" dropdown with relevant choices. After selecting an Item #, the "Batch #" field will also auto-populate with corresponding numbers. If the Item #s don't appear, click "Delete" to remove the entry and then re-add it, which should refresh the item list.
+    </label>
+    <button type="button" id="start-scanner" class="button" style="background-color: #28a745; color: white;">Start Scanner</button>
+    <button type="button" id="stop-scanner" class="button" style="background-color: #dc3545; color: white;">Stop Scanner</button>
+
+    <div id="barcode-scanner" style="width: 100%; max-width: 500px; margin: 10px auto;"></div>
+    <label for="prdNumber">Production Order #:</label>
+    <input type="text" id="prdNumber" name="prdNumber" pattern="PRD-\\d{6}" required class="form-control" style="margin-top: 10px;">  
+    </div>
+
+        <table id="entryTable" style="width:100%; margin-top: 20px;">
+        <p id="loading-note">Scrap Form Note: After entering or scanning your PRD#, please click "Add Entry" for the number of entries you plan to make. This allows sufficient time for each row to load properly. Furthermore, if data is not loading, delete entry row, and add a new entry to re-initialize the load.</p>
+<div id="warning-message"></div>
+          <thead>
+            <tr>
+              <th>Item #</th>
+              <th>Batch #</th>
+              <th>NC Code</th>
+              <th>Quantity</th>
+              <th>Goodwill/Vendor</th>
+            </tr>
+          </thead>
+          <tbody id="entryContainer">
+            <!-- Entry rows will be added here by JavaScript -->
+          </tbody>
+        </table>
+        <button type="button" onclick="addEntry()" class="button">Add Entry</button>
+        <button type="button" onclick="verifyData()" class="VERbutton">Verify Data</button>
+        <button type="button" button onclick="goBack()" class="button">Back to Dashboard</button>
+
+        <div id="verificationSection" style="display:none;">
+        <h3>Verification</h3>
+        <table id="verificationTable">
+            <!-- Table rows will be added here by JavaScript -->
+        </table>
+        <p>After verifying the above information is correct, please put your 3-letter initial to digitally sign. Accuracy is important, and we appreciate your efforts in reviewing and verifying your entries before submission.</p>
+        <div>
+            <label for="signature">Signature:</label>
+            <input type="text" id="signature" name="signature" required oninput="enableSubmitButton()">
+        </div>
+        <button type="SUBbutton" onclick="finalSubmit()" class="SUBbutton" id="finalSubmitButton" disabled>Submit Data</button>
+    </div>
+
+      </form>
+    </div>
+  </div>
+
+<script>
+function showForm() {
+    document.getElementById('dataForm').style.display = 'block';
+    document.getElementById('entryContainer').innerHTML = '';
+    addEntry();
+}
+
+function populateDropdown(dropdown, options, placeholder) {
+    dropdown.innerHTML = '';
+    if (placeholder) {
+        dropdown.appendChild(new Option(placeholder, '', true, true));
+    }
+    options.forEach(option => dropdown.appendChild(new Option(option)));
+}
+
+function addEntry() {
+    const container = document.getElementById('entryContainer');
+    const entryRow = document.createElement('tr');
+    entryRow.innerHTML = `
+        <td><select name="componentItem"></select></td>
+        <td><input type="text" name="batchNumber" readonly></td>
+        <td><select name="ncCode"></select></td>
+        <td><input type="number" name="quantity" min="1" required></td>
+        <td><select name="goodwillVendor"></select></td>
+        <td><button type="button" class="delete-entry" onclick="deleteEntry(this)">Delete</button></td>
+    `;
+    container.appendChild(entryRow);
+    fetchDropdownData(entryRow);
+
+    // Initialize 'Item #' dropdown for the new row
+    let prdNumber = document.getElementById('prdNumber').value;
+    if(prdNumber) {
+        updateItemDropdown(entryRow, prdNumber);
+    }
+
+    // Add event listener to the 'Item #' dropdown
+    let itemDropdown = entryRow.querySelector('select[name="componentItem"]');
+    itemDropdown.addEventListener('change', function() {
+        updateBatchNumbers(this.value, entryRow);
+    });
+}
+
+// Function to update 'Item #' dropdown based on 'PRD #' - Call this when adding a new entry or changing 'PRD #'
+function updateItemDropdown(entryRow, prdNumber) {
+    google.script.run.withSuccessHandler(function(data) {
+        populateDropdown(entryRow.querySelector('select[name="componentItem"]'), data.items, "Select Item #");
+    }).getDataForPRD(prdNumber);
+}
+
+///Automatically add Batch # based on Item # and PRD #. Text. 
+function updateBatchNumbers(item, entryRow) {
+    let prdNumber = document.getElementById('prdNumber').value; // Get the current PRD #
+
+    google.script.run.withSuccessHandler(function(batches) {
+        // Concatenate all batch numbers, separated by commas
+        let batchInput = entryRow.querySelector('input[name="batchNumber"]');
+        batchInput.value = batches.join(', ');
+    }).getBatchesForItem(item, prdNumber);
+}
+
+function fetchDropdownData(entryRow) {
+    google.script.run.withSuccessHandler(options => {
+        populateDropdown(entryRow.querySelector('select[name="ncCode"]'), options, "Select NC Code");
+    }).getDropdownOptions('N2:N40');
+
+    populateDropdown(entryRow.querySelector('select[name="goodwillVendor"]'), ["Goodwill", "Vendor"], "Select GW / V");
+}
+
+function deleteEntry(deleteButton) {
+    deleteButton.closest('tr').remove();
+}
+
+function verifyData() {
+    let isValid = true;
+    const prdInput = document.getElementById('prdNumber');
+    const dataEnteredBy = document.getElementById('dataEnteredBy');
+    const job = document.getElementById('job');
+    const prdPattern = /^PRD-\d{6}$/;
+    let emptyFields = [];
+
+    // Clear any previous warnings
+    clearWarnings();
+
+    // Validate PRD field format
+    isValid &= validateField(prdInput, prdPattern, 'PRD number format is incorrect.');
+
+    // Validate 'Data Entered By:' and 'Job:' fields
+    if (dataEnteredBy.value.trim() === '') {
+        dataEnteredBy.classList.add('error');
+        emptyFields.push('Data Entered By');
+        isValid = false;
+    } else {
+        dataEnteredBy.classList.remove('error');
+    }
+
+    if (job.value.trim() === '') {
+        job.classList.add('error');
+        emptyFields.push('Job');
+        isValid = false;
+    } else {
+        job.classList.remove('error');
+    }
+
+    // Check for empty fields in each entry
+    const entries = document.querySelectorAll('#entryContainer tr');
+    entries.forEach((entry, index) => {
+        entry.querySelectorAll('input, select').forEach(field => {
+            if (field.value.trim() === '' && field.type !== 'button') {
+                let fieldName = field.name || field.getAttribute('name') || 'Unnamed Field';
+                field.classList.add('error');
+                emptyFields.push(`Row ${index + 1}: ${fieldName}`);
+                isValid = false;
+            } else {
+                field.classList.remove('error');
+            }
+        });
+    });
+
+    if (!isValid) {
+        displayWarning('Please fill in all required fields: ' + emptyFields.join(', ') + '.');
+    }
+
+    if (isValid) {
+        populateVerificationTable();
+        document.getElementById('verificationSection').style.display = 'block';
+    }
+}
+
+function validateField(input, pattern, errorMessage) {
+    if (!pattern.test(input.value)) {
+        input.classList.add('error');
+        displayWarning(errorMessage);
+        return false;
+    }
+    input.classList.remove('error');
+    return true;
+}
+
+function displayWarning(message) {
+    const warningDiv = document.getElementById('warning-message');
+    warningDiv.innerText += message + '\n';
+    warningDiv.style.display = 'block';
+}
+
+function clearWarnings() {
+    const warningDiv = document.getElementById('warning-message');
+    if (warningDiv) { // Check if the element is not null
+        warningDiv.innerText = '';
+        warningDiv.style.display = 'none';
+    } else {
+        console.error('Warning message element not found');
+    }
+}
+
+function populateVerificationTable() {
+    const formData = gatherFormData();
+    const verificationTable = document.getElementById('verificationTable');
+    verificationTable.innerHTML = '';
+
+    createTableHeaders(verificationTable, ['Name', 'Job', 'PRD#', 'Item #', 'Batch #', 'NC Code', 'Qty', 'GW/V']);
+    formData.entries.forEach(entry => addTableRow(verificationTable, formData, entry));
+}
+
+function gatherFormData() {
+    return {
+        dataEnteredBy: document.getElementById('dataEnteredBy').value,
+        job: document.getElementById('job').value,
+        prdNumber: document.getElementById('prdNumber').value,
+        entries: Array.from(document.querySelectorAll('#entryContainer tr')).map(row => ({
+            componentItem: row.querySelector('[name="componentItem"]').value,
+            batchNumber: row.querySelector('[name="batchNumber"]').value,
+            ncCode: row.querySelector('[name="ncCode"]').value,
+            quantity: row.querySelector('[name="quantity"]').value,
+            goodwillVendor: row.querySelector('[name="goodwillVendor"]').value
+        }))
+    };
+}
+
+function createTableHeaders(table, headers) {
+    const thead = table.createTHead();
+    const headerRow = thead.insertRow();
+    headers.forEach(header => headerRow.appendChild(document.createElement('th')).textContent = header);
+}
+
+function addTableRow(table, formData, entry) {
+    const row = table.insertRow();
+    ['dataEnteredBy', 'job', 'prdNumber', 'componentItem', 'batchNumber', 'ncCode', 'quantity', 'goodwillVendor']
+        .forEach(key => row.insertCell().textContent = formData[key] || entry[key]);
+}
+
+function enableSubmitButton() {
+    document.getElementById('finalSubmitButton').disabled = !document.getElementById('signature').value.trim();
+}
+
+function finalSubmit() {
+    clearWarnings(); // Clear any existing warnings
+
+    const signature = document.getElementById('signature').value.trim();
+    if (signature.length < 2) {
+        displayWarning('Please include your full initials in the signature field to submit.');
+        document.getElementById('signature').classList.add('error');
+        return; // Stop the function if the validation fails
+    } else {
+        document.getElementById('signature').classList.remove('error');
+    }
+
+    if (submitForm()) {
+        document.getElementById('verificationSection').style.display = 'none';
+        resetForm();
+    }
+}
+
+function submitForm() {
+    const formData = gatherFormData();
+    formData.signature = document.getElementById('signature').value;
+    if (!formData.signature) {
+        displayWarning('Signature is required.');
+        return false;
+    }
+    google.script.run.withSuccessHandler(() => {
+        alert('Data submitted successfully.');
+    }).withFailureHandler(err => {
+        alert('Failed to submit data. Error: ' + err.message);
+    }).processFormData(formData);
+    return true;
+}
+
+function resetForm() {
+    document.getElementById('scrapForm').reset();
+    document.getElementById('entryContainer').innerHTML = '';
+    addEntry();
+}
+
+function goBack() {
+    document.getElementById('dataForm').style.display = 'none';
+}
+
+function startScanner() {
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector('#barcode-scanner')
+        },
+        decoder: {
+            readers: ["code_128_reader"]
+        }
+    }, function(err) {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        Quagga.start();
+        // Expand the scanner display area
+        var scannerDisplay = document.getElementById('barcode-scanner');
+        scannerDisplay.style.maxHeight = '300px'; // Set the max-height to expand the scanner area
+    });
+
+    Quagga.onDetected(onBarcodeScanned);
+}
+
+function stopScanner() {
+    Quagga.stop(); // Stop the scanner
+
+    // Collapse the scanner's display area
+    var scannerDisplay = document.getElementById('barcode-scanner');
+    scannerDisplay.style.maxHeight = '0'; // Set max-height to 0 to collapse the scanner area smoothly
+}
+
+// Event listener for the start button
+document.getElementById('start-scanner').addEventListener('click', function() {
+    startScanner();
+});
+
+// Event listener for the stop button
+document.getElementById('stop-scanner').addEventListener('click', function() {
+    stopScanner();
+});
+
+function onBarcodeScanned(data) {
+    var prdInput = document.getElementById('prdNumber');
+    var scannedCode = data.codeResult.code;
+    var prdPattern = /^PRD-\d{6}$/; // Regular expression for PRD number
+
+    if (prdInput && prdPattern.test(scannedCode)) {
+        prdInput.value = scannedCode;
+        updateItemAndBatchFields(scannedCode); // Update related fields based on the PRD#
+        stopScanner(); // Automatically stop the scanner
+    }
+}
+
+function openInNewTab(url) {
+    var win = window.open(url, '_blank');
+    win.focus();
+}
+
+window.onload = function() {
+
+google.script.run.withSuccessHandler(options => {
+  populateDropdown(document.getElementById('dataEnteredBy'), options, "Select Data Entered By");
+  }).getDropdownOptions('J2:J40');
+
+  addEntry();
+  };
+
+document.getElementById('prdNumber').addEventListener('change', function() {
+  updateItemAndBatchFields(this.value);
+  });
+
+function updateItemAndBatchFields(prdNumber) {
+  google.script.run.withSuccessHandler(function(data) {
+  populateDropdown(document.querySelector('select[name="componentItem"]'), data.items, "Select Item #");
+  // Optionally, handle the batch numbers here or in another function
+  }).getDataForPRD(prdNumber);
+  }
+document.getElementById('prdNumber').addEventListener('change', function() {
+  updateItemAndBatchFields(this.value); // Update fields when PRD# is manually changed
+  });
+
+////////Handles routing to reporting html file/////////
+function openProductionOrderReporting() {
+    google.script.run.withSuccessHandler(function(htmlOutput) {
+        if(htmlOutput) {
+            document.open();
+            document.write(htmlOutput.getContent());
+            document.close();
+        } else {
+            console.error('Failed to load the Production Order Reporting page.');
+            alert('Error: Unable to load the page.');
+        }
+    }).getProductionOrderReportingPage();
+}
+
+</script>
+</body>
+</html>
+
+
