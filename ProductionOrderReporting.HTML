@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Production Order Reporting</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .entry {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .entry label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .entry input[type="text"], .entry input[type="number"], .entry select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        #barcode-scanner {
+            width: 100%;
+            max-width: 400px;
+            max-height: 0;
+            overflow: hidden;
+            margin: 20px auto;
+            transition: max-height 0.5s ease-out;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quagga@1.0.1/dist/quagga.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <form id="productionOrderForm">
+            <h2>Production Order Reporting</h2>
+
+            <div class="entry">
+                <label for="productionPrdNumber">Production Order #:</label>
+                <input type="text" id="productionPrdNumber" name="prdNumber" required>
+                <button type="button" id="start-production-scanner">Start Scanner</button>
+            </div>
+
+            <div class="entry">
+                <label for="job">Job:</label>
+                <select id="job" name="job" required>
+                    <option value="">Select Job</option>
+                    <option value="DTN Assembly">DTN Assembly</option>
+                    <option value="DTN Quality">DTN Quality</option>
+                    <option value="DTN Glue">DTN Glue</option>
+                    <option value="DTN AQL">DTN AQL</option>
+                </select>
+            </div>
+
+            <div class="entry">
+                <label for="status">Status:</label>
+                <select id="status" name="status" required>
+                    <option value="">Select Status</option>
+                    <option value="Start">Start</option>
+                    <option value="Finish">Finish</option>
+                    <option value="Break">Break</option>
+                </select>
+            </div>
+
+            <div class="entry">
+                <label for="fullName">Full Name:</label>
+                <select id="fullName" name="fullName" required>
+                    <!-- Options will be populated from script -->
+                </select>
+            </div>
+
+            <div class="entry">
+                <label for="timestamp">Timestamp:</label>
+                <input type="text" id="timestamp" name="timestamp" readonly required>
+            </div>
+
+            <div class="entry" id="quantityFields">
+                <label for="startQuantity">Start Quantity:</label>
+                <input type="number" id="startQuantity" name="startQuantity" max="200" required>
+
+                <label for="finishQuantity">Finish Quantity:</label>
+                <input type="number" id="finishQuantity" name="finishQuantity" max="200" required>
+
+                <label for="totalScrap">Total Scrap:</label>
+                <input type="number" id="totalScrap" name="totalScrap" max="200" required>
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <button onclick="goBackToDashboard()">Back to Dashboard</button>
+        <button onclick="openScrapReporting()">Scrap Reporting Form</button>
+    </div>
+
+    <div id="barcode-scanner" style="display: none;">
+        <!-- Scanner viewfinder will be here -->
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setupBarcodeScanner();
+        setupFormEvents();
+        recordTimestamp();
+    });
+
+    function setupBarcodeScanner() {
+        var scannerActive = false;
+        var scanner = document.getElementById('barcode-scanner');
+
+        document.getElementById('start-production-scanner').addEventListener('click', function() {
+            if (scannerActive) {
+                Quagga.stop();
+                scanner.style.display = 'none';
+                scannerActive = false;
+            } else {
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: scanner
+                    },
+                    decoder: {
+                        readers: ["code_128_reader"]
+                    }
+                }, function(err) {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    Quagga.start();
+                    scanner.style.display = 'block';
+                    scannerActive = true;
+                });
+
+                Quagga.onDetected(function(data) {
+                    document.getElementById('productionPrdNumber').value = data.codeResult.code;
+                    Quagga.stop();
+                    scanner.style.display = 'none';
+                    scannerActive = false;
+                });
+            }
+        });
+    }
+
+    function setupFormEvents() {
+        var statusSelect = document.getElementById('status');
+        var quantityFields = document.getElementById('quantityFields');
+
+        statusSelect.addEventListener('change', function() {
+            quantityFields.style.display = this.value === 'Finish' ? 'block' : 'none';
+            recordTimestamp();
+        });
+
+        document.getElementById('productionOrderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (isValidForm()) {
+                var formData = {
+                    prdNumber: document.getElementById('productionPrdNumber').value,
+                    job: document.getElementById('job').value,
+                    status: document.getElementById('status').value,
+                    fullName: document.getElementById('fullName').value,
+                    timestamp: document.getElementById('timestamp').value,
+                    startQuantity: document.getElementById('startQuantity').value,
+                    finishQuantity: document.getElementById('finishQuantity').value,
+                    totalScrap: document.getElementById('totalScrap').value
+                };
+
+                google.script.run.appendProductionOrderData(formData);
+                alert('Data submitted successfully.');
+                this.reset();
+            } else {
+                alert('Please fill in all required fields.');
+            }
+        });
+    }
+
+    function isValidForm() {
+        var form = document.getElementById('productionOrderForm');
+        var status = document.getElementById('status').value;
+        var isValid = form.checkValidity();
+
+        if (status === 'Finish') {
+            var startQuantity = document.getElementById('startQuantity').value;
+            var finishQuantity = document.getElementById('finishQuantity').value;
+            var totalScrap = document.getElementById('totalScrap').value;
+            isValid = isValid && startQuantity && finishQuantity && totalScrap;
+        }
+
+        return isValid;
+    }
+
+    function recordTimestamp() {
+        var currentDateTime = new Date().toISOString();
+        document.getElementById('timestamp').value = currentDateTime;
+    }
+
+    function goBackToDashboard() {
+        // Logic to go back to the main dashboard
+    }
+
+    function openScrapReporting() {
+        // Logic to open the scrap reporting form
+    }
+</script>
+
+</body>
+</html>
