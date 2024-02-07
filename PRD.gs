@@ -1,12 +1,21 @@
 function doGet(e) {
-  return HtmlService.createHtmlOutputFromFile('CMA_Scrap_Form_WA')
-    .setTitle('GWCS YOST APP')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  var page = e.parameter.page;
+  // Check the 'page' parameter to decide which HTML file to serve
+  if (page === 'ProductionOrderReporting') {
+    return HtmlService.createHtmlOutputFromFile('ProductionOrderReporting')
+        .setTitle('Production Order Reporting');
+  } else if (page === 'CMA_Scrap_Form_WA') {
+    return HtmlService.createHtmlOutputFromFile('CMA_Scrap_Form_WA')
+        .setTitle('Scrap Reporting Form');
+  } else {
+    // Serve the main dashboard or another default page if no specific page is requested
+    var template = HtmlService.createTemplateFromFile('CMA_Scrap_Form_WA');
+    template.message = ''; // Optional: Pass any messages or data to the template
+    return template.evaluate().setTitle('Your Web App Title');
+  }
 }
-
-function getProductionOrderReportingPage() {
-  return HtmlService.createHtmlOutputFromFile('ProductionOrderReporting')
-    .setTitle('Production Order Reporting');
+function getUrl() {
+  return ScriptApp.getService().getUrl();
 }
 
 function getDropdownOptions(rangeA1Notation) {
