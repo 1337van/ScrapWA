@@ -139,7 +139,7 @@
 
 <body>
 <div class="container">
-    <button onclick="openProductionOrderReporting();" class="button">Production Order Reporting</button>
+    <a href="<?= getUrl() ?>?page=ProductionOrderReporting" class="button">Production Order Reporting</a>
     <button onclick="showForm()" class="button">Scrap Reporting Form</button>
     <button onclick="openInNewTab('');" class="button">*WI Under Construction*</button>
 
@@ -528,22 +528,7 @@ document.getElementById('prdNumber').addEventListener('change', function() {
   updateItemAndBatchFields(this.value); // Update fields when PRD# is manually changed
   });
 
-////////Handles routing to reporting html file/////////
-function openProductionOrderReporting() {
-    google.script.run.withSuccessHandler(function(htmlOutput) {
-        if(htmlOutput) {
-            document.open();
-            document.write(htmlOutput.getContent());
-            document.close();
-        } else {
-            console.error('Failed to load the Production Order Reporting page.');
-            alert('Error: Unable to load the page.');
-        }
-    }).getProductionOrderReportingPage();
-}
 
 </script>
 </body>
 </html>
-
-
